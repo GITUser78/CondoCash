@@ -19,7 +19,8 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y -qq firefox-esr
           fi
-          (command -v firefox || command -v firefox-esr) --version
+          browser="$(command -v firefox || command -v firefox-esr)"
+          "$browser" --version
 
       - name: Unit tests
         run: python3 tests/unit/run_unit.py
