@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  unit:
+    name: Unit (browser)
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -25,17 +26,38 @@ jobs:
       - name: Unit tests
         run: python3 tests/unit/run_unit.py
 
-      # Runs only when a *dedicated test project* is configured in repository
-      # secrets. Never point these at the production project: the suite creates
-      # and deletes users and condos of its own.
-      - name: Integration tests
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_TEST_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_TEST_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_TEST_SERVICE_ROLE_KEY }}
+  integration:
+    name: Integration (local Supabase)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install the Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Brings up Postgres, GoTrue and PostgREST in Docker and applies
+      # supabase/migrations — so the tests run against this branch's schema,
+      # never against a hosted project holding real data.
+      - name: Start the local stack
+        run: supabase start
+
+      - name: Export the local credentials
         run: |
-          if [ -z "$SUPABASE_URL" ]; then
-            echo "No test project configured (SUPABASE_TEST_* secrets) — skipping."
-            exit 0
-          fi
-          python3 tests/integration/test_api.py
+          supabase status -o json > /tmp/supabase-status.json
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json
+          s = {k.lower(): v for k, v in json.load(open("/tmp/supabase-status.json")).items()}
+          print("SUPABASE_URL=" + s.get("api_url", "http://127.0.0.1:54321"))
+          print("SUPABASE_ANON_KEY=" + s["anon_key"])
+          print("SUPABASE_SERVICE_ROLE_KEY=" + s["service_role_key"])
+          PY
+
+      - name: Integration tests
+        run: python3 tests/integration/test_api.py
+
+      - name: Stop the local stack
+        if: always()
+        run: supabase stop --no-backup

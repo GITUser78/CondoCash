@@ -56,6 +56,18 @@ for the URL and anon key and to the Supabase CLI for the service-role key.
 
 Without them the suite prints `SKIPPED` and exits 0.
 
+In CI the suite runs against a **local** Supabase stack (`supabase start`, which
+needs Docker), so pull requests never touch a hosted project. The same works on
+a workstation with Docker installed:
+
+```bash
+supabase start
+eval "$(supabase status -o env | sed 's/^/export /')"
+SUPABASE_URL=$API_URL SUPABASE_ANON_KEY=$ANON_KEY \
+  SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY python3 tests/integration/test_api.py
+supabase stop
+```
+
 > **Point this at a development project.** The tests only ever touch rows they
 > created themselves, but they do write to whatever project they are given, and
 > a run that dies between setup and teardown can leave a scratch condo behind
