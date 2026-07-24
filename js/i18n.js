@@ -6,7 +6,7 @@
 
 export const LANGUAGES = { bg: "Български", en: "English" };
 
-const translations = {
+export const translations = {
   en: {
     app_name: "CondoCash",
     tagline: "Condo cashier management",

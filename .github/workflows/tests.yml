@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Ensure a browser is available
+        run: |
+          if ! command -v firefox >/dev/null && ! command -v firefox-esr >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq firefox-esr
+          fi
+          (command -v firefox || command -v firefox-esr) --version
+
+      - name: Unit tests
+        run: python3 tests/unit/run_unit.py
+
+      # Runs only when a *dedicated test project* is configured in repository
+      # secrets. Never point these at the production project: the suite creates
+      # and deletes users and condos of its own.
+      - name: Integration tests
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_TEST_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_TEST_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_TEST_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "No test project configured (SUPABASE_TEST_* secrets) — skipping."
+            exit 0
+          fi
+          python3 tests/integration/test_api.py

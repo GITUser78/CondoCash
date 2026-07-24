@@ -126,6 +126,22 @@ and signature lines for cashier and chairperson.
 Receipts print from the payments list (🖨 on the row) or right after booking a
 payment.
 
+## Tests
+
+```bash
+python3 tests/run_tests.py --unit   # pure logic, no backend, no dependencies
+python3 tests/run_tests.py          # adds the integration suite
+```
+
+Unit tests run in headless Firefox (the app has no build step, so the browser
+is the runtime) and cover the fee maths, the date helpers, i18n key parity and
+the printed documents. Integration tests exercise the SQL functions, the
+balances view and the whole RLS matrix against a real Supabase project, using
+throwaway users and condos that are cleaned up afterwards. Both check the fee
+maths against the same fixture, so the SQL and JS implementations cannot drift
+apart. See [tests/README.md](tests/README.md) — and point the integration suite
+at a development project, not the one holding real money.
+
 ## Project layout
 
 ```
@@ -143,6 +159,7 @@ js/i18n.js            Bulgarian + English strings
 js/views/*.js         one module per tab
 supabase/migrations/  tables, RLS policies, views, functions (supabase db push)
 supabase/config.toml  Supabase CLI project config
+tests/                unit (browser) + integration (API) suites
 ```
 
 ## Notes
