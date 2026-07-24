@@ -1,0 +1,215 @@
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --border: #e2e6ea;
+  --text: #1f2a37;
+  --muted: #6b7280;
+  --primary: #1d6fb8;
+  --primary-dark: #155a95;
+  --danger: #c0392b;
+  --success: #1e8e50;
+  --warning: #b8860b;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181d;
+    --surface: #1c2229;
+    --border: #2b333c;
+    --text: #e6eaef;
+    --muted: #9aa5b1;
+    --primary: #3b93df;
+    --primary-dark: #2f78b8;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+}
+.boot { padding: 3rem; text-align: center; color: var(--muted); }
+
+/* ---------- Layout ---------- */
+header.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: .75rem;
+  padding: .6rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+}
+.brand { font-weight: 700; font-size: 1.15rem; color: var(--primary); }
+.brand .logo { margin-right: .3rem; }
+.topbar .spacer { flex: 1; }
+.topbar select { width: auto; max-width: 12rem; }
+.topbar .lang { width: auto; }
+
+nav.tabs {
+  display: flex; gap: .25rem; overflow-x: auto;
+  padding: 0 .5rem; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+nav.tabs button {
+  border: none; background: none; color: var(--muted);
+  padding: .7rem .9rem; cursor: pointer; font-size: .95rem;
+  border-bottom: 3px solid transparent; white-space: nowrap;
+}
+nav.tabs button.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+main { max-width: 1000px; margin: 0 auto; padding: 1rem; }
+
+/* ---------- Cards & sections ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 1rem; margin-bottom: 1rem;
+}
+.card h2, .card h3 { margin-top: 0; }
+.section-title { display: flex; align-items: center; gap: .5rem; justify-content: space-between; flex-wrap: wrap; }
+
+/* ---------- Stat tiles ---------- */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .9rem 1rem; box-shadow: var(--shadow); }
+.stat .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+.stat .value {
+  font-size: 1.45rem; font-weight: 700; margin-top: .2rem;
+  white-space: nowrap; overflow-wrap: normal; font-variant-numeric: tabular-nums;
+}
+.stat.warn .value { color: var(--warning); }
+.stat.danger .value { color: var(--danger); }
+.stat.ok .value { color: var(--success); }
+
+/* ---------- Tables ---------- */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .93rem; }
+th, td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: .82rem; text-transform: uppercase; letter-spacing: .02em; }
+tbody tr:hover { background: rgba(127,127,127,.06); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.owe { color: var(--danger); font-weight: 600; }
+.overdue-badge { background: var(--danger); color: #fff; border-radius: 6px; padding: .05rem .4rem; font-size: .75rem; margin-left: .4rem; }
+
+/* ---------- Forms ---------- */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .7rem; }
+/* filter rows should not stretch a lone month field across the card */
+.form-grid.filters { grid-template-columns: repeat(auto-fit, minmax(180px, 240px)); margin-bottom: .8rem; }
+label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+input, select, textarea {
+  width: 100%; padding: .5rem .6rem; font-size: .95rem;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.field-check { display: flex; align-items: center; gap: .4rem; }
+.field-check input { width: auto; }
+
+/* ---------- Buttons ---------- */
+button.btn {
+  border: 1px solid transparent; border-radius: 8px; cursor: pointer;
+  padding: .5rem .9rem; font-size: .92rem; font-weight: 600;
+  background: var(--primary); color: #fff;
+}
+button.btn:hover { background: var(--primary-dark); }
+button.btn.secondary { background: transparent; color: var(--primary); border-color: var(--border); }
+button.btn.secondary:hover { background: rgba(127,127,127,.08); }
+button.btn.danger { background: var(--danger); }
+button.btn.small { padding: .3rem .55rem; font-size: .82rem; }
+.btn-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; }
+.icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: .25rem .4rem; font-size: 1rem; }
+.icon-btn:hover { color: var(--primary); }
+.icon-btn.danger:hover { color: var(--danger); }
+
+/* ---------- Login ---------- */
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 1rem; }
+.login-card { width: 100%; max-width: 360px; }
+.login-card .brand { font-size: 1.6rem; display: block; text-align: center; margin-bottom: .3rem; }
+.login-card .tagline { text-align: center; color: var(--muted); margin-bottom: 1.2rem; font-size: .9rem; }
+
+/* ---------- Misc ---------- */
+.pill { display: inline-block; padding: .1rem .5rem; border-radius: 999px; font-size: .75rem; background: rgba(29,111,184,.12); color: var(--primary); }
+.pill.admin { background: rgba(184,134,11,.15); color: var(--warning); }
+.muted { color: var(--muted); }
+.msg { padding: .5rem .75rem; border-radius: 8px; margin: .5rem 0; font-size: .9rem; }
+.msg.error { background: rgba(192,57,43,.12); color: var(--danger); }
+.msg.ok { background: rgba(30,142,80,.12); color: var(--success); }
+.empty { color: var(--muted); text-align: center; padding: 2rem 1rem; }
+
+.row-overdue td { background: rgba(192,57,43,.06); }
+tfoot td { font-weight: 700; border-top: 2px solid var(--border); border-bottom: none; }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);
+  background: var(--success); color: #fff; padding: .6rem 1rem; border-radius: 999px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25); z-index: 80; font-size: .9rem;
+  transition: opacity .5s ease;
+}
+.toast.error { background: var(--danger); }
+.toast.out { opacity: 0; }
+
+/* ---------- Modal ---------- */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 50; padding: 1rem; }
+.modal { background: var(--surface); border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0,0,0,.3); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 1.2rem; }
+.modal h3 { margin-top: 0; }
+.chiplist { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+.chip-toggle { border: 1px solid var(--border); border-radius: 999px; padding: .25rem .7rem; cursor: pointer; font-size: .85rem; background: var(--surface); }
+.chip-toggle.on { background: var(--primary); color: #fff; border-color: var(--primary); }
+.modal.wide { max-width: 860px; }
+body.modal-open { overflow: hidden; }
+
+/* ---------- Printable documents ---------------------------------------------
+   Documents are rendered into #print-root, which is invisible on screen. While
+   printing, body.printing hides the app and shows the document instead.       */
+#print-root { display: none; }
+
+.print-page { color: #000; background: #fff; font-size: 11pt; }
+.print-page.break-after { break-after: page; page-break-after: always; }
+.print-head { display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 2px solid #000; padding-bottom: .4rem; margin-bottom: 1rem; gap: 1rem; }
+.print-condo-name { font-weight: 700; font-size: 1.1rem; }
+.print-condo-addr, .print-meta { font-size: .85rem; color: #444; }
+.print-title { font-size: 1.35rem; margin: 0 0 .2rem; text-align: center; }
+.print-subtitle { text-align: center; color: #444; margin-bottom: 1rem; }
+.print-h2 { font-size: 1rem; margin: 1.2rem 0 .4rem; border-bottom: 1px solid #999; padding-bottom: .15rem; }
+.print-empty { padding: .8rem 0; color: #555; font-style: italic; }
+/* Paper has no horizontal scrollbar: wide tables must wrap, not overflow. */
+.print-body .table-wrap { overflow: visible; }
+.print-body table { font-size: 9pt; table-layout: auto; width: 100%; }
+.print-body th, .print-body td {
+  border-bottom: 1px solid #ccc; white-space: normal; color: #000;
+  padding: .35rem .3rem; overflow-wrap: break-word;
+}
+.print-body th { color: #000; font-size: 8pt; }
+.print-summary { margin: .8rem 0 0; max-width: 380px; margin-left: auto; }
+.print-total { display: flex; justify-content: space-between; gap: 2rem; padding: .25rem 0; border-bottom: 1px dotted #bbb; }
+.print-total.strong { font-size: 1.05rem; border-bottom: 2px solid #000; border-top: 1px solid #000; }
+.print-signatures { display: flex; justify-content: space-between; gap: 2rem; margin-top: 3rem; }
+.print-signatures .sig { flex: 1; text-align: center; }
+.sig-line { border-bottom: 1px solid #000; min-height: 2.2rem; padding-bottom: .1rem; }
+.sig-label { font-size: .8rem; color: #444; margin-top: .2rem; }
+.letter p { margin: .6rem 0; line-height: 1.6; }
+.receipt .kv { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.2rem; margin: 0; }
+.receipt .kv dt { color: #444; }
+.receipt .kv dd { margin: 0; font-weight: 600; }
+
+@media print {
+  @page { size: A4; margin: 16mm 14mm; }
+  body { background: #fff; }
+  body.printing #app,
+  body.printing .modal-backdrop,
+  body.printing .toast { display: none !important; }
+  body.printing #print-root { display: block; }
+  body.printing { overflow: visible; }
+  .print-page { break-inside: auto; }
+  .print-body tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-signatures { break-inside: avoid; }
+}

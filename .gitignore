@@ -1,0 +1,10 @@
+# Local Supabase credentials — copy js/config.example.js to js/config.js and
+# fill in your own project URL and anon key. Never committed, so a fork/clone
+# cannot reach this deployment's backend.
+js/config.js
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+*~
