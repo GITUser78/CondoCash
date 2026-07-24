@@ -320,10 +320,24 @@ def setup(api, service):
     pw = secrets.token_urlsafe(18)
     C.admin_email = f"condocash-test-admin-{TAG}@example.com"
     C.cashier_email = f"condocash-test-cashier-{TAG}@example.com"
+    # Fail with a useful message when the target has no schema at all, rather
+    # than blaming whichever request happens to hit a missing table first.
+    status, out = api.rest("/profiles?select=id&limit=1", token=service)
+    assert status == 200, (
+        f"cannot read public.profiles ({status}: {out}) — has `supabase db push` "
+        f"/ `supabase db reset` been run against {api.base}?")
+
     C.admin_id = api.create_user(service, C.admin_email, pw, "Test Admin")
     C.cashier_id = api.create_user(service, C.cashier_email, pw, "Test Cashier")
-    status, _ = api.rest(f"/profiles?id=eq.{C.admin_id}", "PATCH", {"role": "admin"}, service)
-    assert status == 200, "could not promote the test admin"
+
+    status, out = api.rest(f"/profiles?id=eq.{C.admin_id}&select=id,role", token=service)
+    assert status == 200 and out, (
+        f"no profile row for the new user ({status}: {out}) — is the "
+        f"on_auth_user_created trigger installed?")
+
+    status, out = api.rest(f"/profiles?id=eq.{C.admin_id}", "PATCH", {"role": "admin"}, service)
+    assert status == 200 and out and out[0]["role"] == "admin", (
+        f"could not promote the test admin ({status}: {out})")
     C.admin = api.sign_in(C.admin_email, pw)
     C.cashier = api.sign_in(C.cashier_email, pw)
 

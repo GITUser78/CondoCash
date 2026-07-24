@@ -44,6 +44,13 @@ jobs:
       - name: Start the local stack
         run: supabase start
 
+      # Guarantees the database is exactly what supabase/migrations describes,
+      # whatever state `start` restored from cache.
+      - name: Apply migrations
+        run: |
+          supabase db reset --no-seed
+          supabase migration list --local
+
       - name: Export the local credentials
         run: |
           supabase status -o json > /tmp/supabase-status.json
