@@ -3,13 +3,18 @@
 // preview what an apartment will be charged without hitting the database.
 // ---------------------------------------------------------------------------
 
-export function feeAmount(fee, apartment) {
-  const rate = Number(fee.rate || 0);
+/** How many units the rate is multiplied by for this apartment. */
+export function feeUnits(fee, apartment) {
   switch (fee.calc_type) {
-    case "per_dweller": return round2(rate * (apartment.num_dwellers || 0));
-    case "per_m2":      return round2(rate * Number(apartment.area_m2 || 0));
-    default:            return round2(rate); // flat
+    case "per_dweller": return apartment.num_dwellers || 0;
+    case "per_m2":      return Number(apartment.area_m2 || 0);
+    default:            return 1; // flat
   }
+}
+
+/** base per apartment + rate × units — mirrors fee_amount_for() in SQL. */
+export function feeAmount(fee, apartment) {
+  return round2(Number(fee.base_amount || 0) + Number(fee.rate || 0) * feeUnits(fee, apartment));
 }
 
 /** Total monthly amount for one apartment across all active fee categories. */

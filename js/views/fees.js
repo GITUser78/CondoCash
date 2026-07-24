@@ -20,6 +20,20 @@ const CALC_TYPES = () => [
 ];
 const calcLabel = (v) => CALC_TYPES().find((c) => c.value === v)?.label || v;
 
+/** Human-readable formula, e.g. "10.00 BGN + 3.00 BGN × dweller". */
+function composition(fee) {
+  const base = Number(fee.base_amount || 0);
+  const rate = Number(fee.rate || 0);
+  const unit = fee.calc_type === "per_dweller" ? t("fee_per_dweller_unit")
+    : fee.calc_type === "per_m2" ? t("fee_per_m2_unit")
+    : null;
+  if (!unit) return money(base + rate); // flat: base and rate are both per apartment
+  const parts = [];
+  if (base) parts.push(money(base));
+  parts.push(`${money(rate)} × ${unit}`);
+  return parts.join(" + ");
+}
+
 let genMonth = monthISO();
 
 export async function render(root, ctx) {
@@ -41,13 +55,13 @@ export async function render(root, ctx) {
           ? h("button.btn", { onclick: () => openFeeModal({ ctx }) }, "＋ " + t("add_fee"))
           : null),
       table(
-        [{ label: t("fee_name") }, { label: t("fee_calc") }, { label: t("fee_rate"), num: true },
+        [{ label: t("fee_name") }, { label: t("fee_calc") }, { label: t("fee_composition") },
          { label: t("fee_active") }, { label: t("total"), num: true }, { label: t("actions") }],
         fees,
         (f) => [
           f.name,
           calcLabel(f.calc_type),
-          money(f.rate),
+          composition(f),
           f.active ? h("span.pill", {}, "✓") : h("span.muted", {}, "—"),
           money(round2(apartments.reduce((s, a) => s + (f.active ? feeAmount(f, a) : 0), 0))),
           isAdmin()
@@ -155,14 +169,38 @@ function generatePanel({ ctx, condoId, apartments, fees }) {
 function openFeeModal({ ctx, fee = null }) {
   const name = input({ required: true, value: fee?.name || "" });
   const calc = select(CALC_TYPES(), { value: fee?.calc_type || "per_dweller" });
+  const base = input({ type: "number", step: "0.0001", min: "0", value: fee?.base_amount ?? 0 });
   const rate = input({ type: "number", step: "0.0001", min: "0", required: true, value: fee?.rate ?? "" });
   const active = checkbox(t("fee_active"), fee ? fee.active : true);
+
+  // Live "10.00 + 3.00 × dweller = 16.00 for 2 dwellers" style feedback.
+  const example = h("p.muted");
+  const refresh = () => {
+    const draft = {
+      base_amount: Number(base.value || 0),
+      rate: Number(rate.value || 0),
+      calc_type: calc.value,
+    };
+    if (!draft.base_amount && !draft.rate) { example.textContent = ""; return; }
+    const sample = { num_dwellers: 2, area_m2: 60 };
+    const forWhat = draft.calc_type === "per_dweller"
+      ? `${sample.num_dwellers} × ${t("fee_per_dweller_unit")}`
+      : draft.calc_type === "per_m2" ? `${sample.area_m2} ${t("fee_per_m2_unit")}` : "";
+    example.textContent = `${composition(draft)} → ${money(feeAmount(draft, sample))}`
+      + (forWhat ? ` (${forWhat})` : "");
+  };
+  [base, rate, calc].forEach((el) => el.addEventListener("input", refresh));
+  calc.addEventListener("change", refresh);
+  refresh();
 
   const body = h("div", {},
     h("div.form-grid", {},
       field(t("fee_name"), name),
       field(t("fee_calc"), calc),
+      field(t("fee_base"), base),
       field(t("fee_rate"), rate)),
+    h("p.muted", {}, t("fee_hint")),
+    example,
     active.el);
 
   return openModal({
@@ -175,6 +213,7 @@ function openFeeModal({ ctx, fee = null }) {
         condo_id: state.condoId,
         name: name.value.trim(),
         calc_type: calc.value,
+        base_amount: Number(base.value || 0),
         rate: Number(rate.value),
         active: active.box.checked,
       });
