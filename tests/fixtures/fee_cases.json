@@ -1,0 +1,50 @@
+{
+  "comment": "Fee maths cases. js/calc.js (unit tests) and fee_amount_for() in SQL (integration tests) are both checked against this list, so the two implementations cannot drift apart.",
+  "cases": [
+    {
+      "name": "base per apartment + per dweller, 2 dwellers",
+      "base_amount": 10, "rate": 3, "calc_type": "per_dweller",
+      "num_dwellers": 2, "area_m2": 50, "expected": 16.0
+    },
+    {
+      "name": "base is charged even with no dwellers",
+      "base_amount": 10, "rate": 3, "calc_type": "per_dweller",
+      "num_dwellers": 0, "area_m2": 50, "expected": 10.0
+    },
+    {
+      "name": "purely variable per dweller (legacy shape)",
+      "base_amount": 0, "rate": 6, "calc_type": "per_dweller",
+      "num_dwellers": 3, "area_m2": 50, "expected": 18.0
+    },
+    {
+      "name": "flat fee ignores dwellers and area",
+      "base_amount": 0, "rate": 4.5, "calc_type": "flat",
+      "num_dwellers": 4, "area_m2": 88, "expected": 4.5
+    },
+    {
+      "name": "flat fee with a base adds both",
+      "base_amount": 2.5, "rate": 4.5, "calc_type": "flat",
+      "num_dwellers": 1, "area_m2": 88, "expected": 7.0
+    },
+    {
+      "name": "per m2 with a base",
+      "base_amount": 5, "rate": 0.15, "calc_type": "per_m2",
+      "num_dwellers": 2, "area_m2": 50, "expected": 12.5
+    },
+    {
+      "name": "per m2 rounds to cents (0.15 * 62.5 = 9.375)",
+      "base_amount": 0, "rate": 0.15, "calc_type": "per_m2",
+      "num_dwellers": 1, "area_m2": 62.5, "expected": 9.38
+    },
+    {
+      "name": "missing area counts as zero",
+      "base_amount": 3, "rate": 0.2, "calc_type": "per_m2",
+      "num_dwellers": 1, "area_m2": null, "expected": 3.0
+    },
+    {
+      "name": "zero rate leaves only the base",
+      "base_amount": 12, "rate": 0, "calc_type": "per_dweller",
+      "num_dwellers": 5, "area_m2": 70, "expected": 12.0
+    }
+  ]
+}
