@@ -89,8 +89,12 @@ workflow. For a private deployment, disable Pages and copy your local
 1. *Condos* → add the building, then assign the cashier(s) to it.
 2. *Apartments & owners* → add every apartment with its **number of dwellers**,
    area and owner contact details.
-3. *Fees* → add the cost categories. Each one is either **per dweller**,
-   **flat per apartment** or **per m²**; the rate is multiplied accordingly.
+3. *Fees* → add the cost categories. Each one is charged per apartment as
+   **base amount + rate × units**, where the unit is a **dweller**, the
+   **apartment itself** (flat) or a **m²**. So a category with a base of 10.00
+   and a rate of 3.00 per dweller charges an apartment with two dwellers
+   10.00 + 2 × 3.00 = **16.00**. Leave the base at 0 for a purely variable fee,
+   or the rate at 0 for a purely fixed one.
 
 **Every month**
 
