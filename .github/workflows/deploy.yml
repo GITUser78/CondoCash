@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+# The app is static, but js/config.js is git-ignored (see .gitignore), so the
+# published site gets it written from repository secrets at deploy time:
+#   Settings → Secrets and variables → Actions
+#     SUPABASE_URL       https://<ref>.supabase.co
+#     SUPABASE_ANON_KEY  the anon / public key
+# Both end up in the browser bundle — that is by design for a Supabase client
+# app; Row Level Security is what protects the data, not the key.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; queue them instead of cancelling a live one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/js
+          cp index.html _site/
+          cp -r css _site/
+          cp -r js/. _site/js/
+          rm -f _site/js/config.example.js
+
+      - name: Write js/config.js from secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Missing repository secrets SUPABASE_URL and/or SUPABASE_ANON_KEY."
+            exit 1
+          fi
+          printf 'export const SUPABASE_URL = "%s";\nexport const SUPABASE_ANON_KEY = "%s";\n\n// Default UI language before a user has chosen one: "bg" or "en".\nexport const DEFAULT_LANGUAGE = "bg";\n' \
+            "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > _site/js/config.js
+          # Fail loudly if substitution produced something the app cannot use.
+          grep -q 'supabase.co' _site/js/config.js
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

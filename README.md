@@ -65,6 +65,23 @@ this is enforced in the database by Row Level Security, not just in the UI.
    client library is loaded from a CDN at runtime, so the app needs internet
    access.
 
+## Deployment
+
+Every push to `main` is published to GitHub Pages by
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Because
+`js/config.js` is git-ignored, the workflow writes it from two repository
+secrets (*Settings → Secrets and variables → Actions*):
+
+| Secret | Value |
+|---|---|
+| `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
+| `SUPABASE_ANON_KEY` | the anon / public key |
+
+Both are served to the browser, as any Supabase client app must — RLS is what
+protects the data. Rotating the key means updating the secret and re-running the
+workflow. For a private deployment, disable Pages and copy your local
+`js/config.js` onto the host instead.
+
 ## Daily use
 
 **Administrator, once per building**
