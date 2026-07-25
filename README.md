@@ -41,9 +41,9 @@ this is enforced in the database by Row Level Security, not just in the UI.
    your project URL and anon key from *Project Settings → API*. `js/config.js`
    is git-ignored, so a clone never carries someone else's backend; the anon key
    itself is meant to be public in the browser — access is governed by RLS.
-4. **Create the first user**: *Authentication → Users → Add user* (or let the
-   person sign up). A `profiles` row is created automatically with the role
-   `cashier`; promote the first administrator once, from the SQL editor:
+4. **Create the first user** — see [Adding users](#adding-users) below, then
+   promote that first account to administrator once, from the SQL editor
+   (there is nobody yet who could do it in the app):
 
    ```sql
    update profiles set role = 'admin', full_name = 'Your Name'
@@ -64,6 +64,60 @@ this is enforced in the database by Row Level Security, not just in the UI.
    Any static host works too (Netlify, GitHub Pages, nginx…). The Supabase
    client library is loaded from a CDN at runtime, so the app needs internet
    access.
+
+## Adding users
+
+The app has **no sign-up screen**: accounts are created in Supabase, and an
+administrator then decides what they may see. Everyone starts as a cashier.
+
+### 1. Create the account (Supabase Dashboard)
+
+*Authentication → Users → **Add user** → **Create new user***
+
+| Field | What to enter |
+|---|---|
+| Email | the person's address — it is their login name |
+| Password | pick one; you will pass it on yourself |
+| **Auto Confirm User** | **tick it** — otherwise they cannot sign in until they click a confirmation mail |
+
+On save, the `handle_new_user()` trigger inserts a matching row in `profiles`
+with the role `cashier`. Nothing else is needed in the dashboard.
+
+> **Avoid the *Invite user* button** unless you have configured custom SMTP.
+> Supabase's built-in mail service is rate-limited and meant for testing — on
+> newer projects it only delivers to your own team's addresses — so an invite
+> to a neighbour may silently never arrive. Creating the user with a password
+> avoids email entirely; hand the password over in person and have them change
+> it (see below).
+
+### 2. Give them access (CondoCash → *Users*)
+
+The new account appears in the *Users* tab as soon as it exists.
+
+- **🏢 Condo access** — tick the buildings they look after. Until you do, they
+  sign in successfully but see *"No condo available. Ask an administrator to
+  create one and assign you."* Row Level Security gives them nothing before
+  that, so an unassigned account is harmless.
+- **Make admin** — only for someone who should manage buildings, apartments,
+  fee categories and other users. Cashiers can do the daily work (payments,
+  expenses, statements, protocols) without it.
+- **✎** — fix the display name shown on printed protocols.
+
+### 3. Passwords
+
+There is no "forgot password" or change-password screen in the app yet. To
+change or reset one, use *Authentication → Users → ⋯* in the dashboard
+(*Reset password* mails a link — same SMTP caveat as above; editing the user
+and setting a new password does not).
+
+### Who can create accounts?
+
+Only someone with dashboard access — unless self-signup is enabled under
+*Authentication → Sign In / Providers → Email → "Allow new users to sign up"*.
+Because the anon key is public in any deployed build, **that toggle being on
+means anyone on the internet can create an account** (they would see no data,
+but they would appear in your user list). Leave it off for a private
+building.
 
 ## Deployment
 
